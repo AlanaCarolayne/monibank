@@ -1,0 +1,89 @@
+import ehUmCPF from "./validaCPF.js";
+import maioridade from "./validaIdade.js";
+const camposForm = document.querySelectorAll('[required]');
+const form = document.querySelector('[data-formulario]');
+
+form.addEventListener('submit', (e) =>{
+    e.preventDefault();
+
+    const listaResposta ={
+        'nome': e.target.elements['nome'].value, 
+        'email': e.target.elements['email'].value, 
+        'rg': e.target.elements['rg'].value, 
+        'cpf': e.target.elements['cpf'].value, 
+        'aniversario': e.target.elements['aniversario'].value, 
+    }
+
+    localStorage.setItem('cadastro', JSON.stringify(listaResposta));
+
+    window.location.href = "../pages/abrir-conta-form-2.html"
+})
+
+const tiposDeErro = [
+    'valueMissing',
+    'typeMismatch',
+    'patternMismatch',
+    'tooShort',
+    'customError'
+]
+
+const mensagens = {
+    nome: {
+        valueMissing: "O campo de nome não pode estar vazio.",
+        patternMismatch: "Por favor, preencha um nome válido.",
+        tooShort: "Por favor, preencha um nome válido."
+    },
+    email: {
+        valueMissing: "O campo de e-mail não pode estar vazio.",
+        typeMismatch: "Por favor, preencha um email válido.",
+        tooShort: "Por favor, preencha um e-mail válido."
+    },
+    rg: {
+        valueMissing: "O campo de RG não pode estar vazio.",
+        patternMismatch: "Por favor, preencha um RG válido.",
+        tooShort: "O campo de RG não tem caractéres suficientes."
+    },
+    cpf: {
+        valueMissing: 'O campo de CPF não pode estar vazio.',
+        patternMismatch: "Por favor, preencha um CPF válido.",
+        customError: "O CPF digitado não existe.",
+        tooShort: "O campo de CPF não tem caractéres suficientes."
+    },
+    aniversario: {
+        valueMissing: 'O campo de data de nascimento não pode estar vazio.',
+        customError: 'Você deve ser maior que 18 anos para se cadastrar.'
+    },
+    termos: {
+        valueMissing: 'Você deve aceitar nossos termos antes de continuar.',
+    }
+}
+
+console.log(camposForm);
+camposForm.forEach((campo) => {
+
+    campo.addEventListener('blur', () => verificaCampo(campo));
+    campo.addEventListener('invalid', (e) => e.preventDefault())
+});
+
+function verificaCampo(campo) {
+    let mensagem = '';
+    campo.setCustomValidity('');
+    if (campo.name == 'cpf' && campo.value.length >= 11) {
+        ehUmCPF(campo);
+    }
+    if (campo.name == 'aniversario' && campo.value != "") {
+        maioridade(campo);
+    }
+    tiposDeErro.forEach(erro => {
+        if (campo.validity[erro]) {
+            mensagem = mensagens[campo.name][erro];
+            console.log(mensagem);
+        }
+    })
+    const msgErro = campo.parentNode.querySelector('.mensagem-erro');
+    const validaInput = campo.checkValidity();
+
+    !validaInput ? msgErro.textContent = mensagem : msgErro.textContent = "";
+
+
+}
